@@ -7,20 +7,31 @@ from ha_element import HAElement
 from control_mode import ControlMode
 from control_set import ControlSet, PandaControlSet
 from controller import Controller
+from control_switch import ControlSwitch
+import rospy
+from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
 
 
 @dataclass
 class HybridAutomaton(HAElement):
-    ALLOWED_CHILDREN = [ControlMode]
-    IGNORE_FIELDS = ['default_control_set']
+    ALLOWED_CHILDREN = [ControlMode, ControlSwitch]
+    IGNORE_FIELDS = ['control_set']
 
     name: str
     current_control_mode: str = None
-    default_control_set: type[ControlSet] = PandaControlSet
+    control_set: type[ControlSet] = PandaControlSet
+    update_topic: str = '/update_hybrid_automaton'
 
     def __post_init__(self):
         # HA is always the root element
-        self.root = self
+        self._root = self
+    
+    def find(self, name: str) -> HAElement | None:
+        for child in self.children:
+            if child.name == name:
+                return child
+
+        return None
 
     def xml(self, *, indent: int = 0) -> str:
 
@@ -34,35 +45,23 @@ class HybridAutomaton(HAElement):
 
         return xml
 
-    def start(self, element: HAElement) -> HAElement:
-        # add the element to the tree
-        # (as this might wrap it in a control mode, we need to catch the returned element)
-        element = self.add(element)
+    def run(self):
+        # create the publisher
+        update = rospy.ServiceProxy(self.update_topic, UpdateHybridAutomaton)
 
-        # initialize the current control mode
-        self.current_control_mode = element.name
+        # publish the xml
+        update(self.xml(indent=0))
 
-        return element
+    def control_mode(self, *controllers: Controller) -> ControlMode:        
+        # create a new control set
+        control_set = self.control_set()
 
-    def add(self, element: HAElement) -> HAElement:
-        control_mode = None
+        # add all controllers to this set
+        for controller in controllers:
+            control_set.add(controller)
 
-        if isinstance(element, ControlMode):
-            # add the control mode directly
-            control_mode = element
+        # create a new mode where we add the control set to
+        control_mode = ControlMode(name=controller.name)
+        control_mode.add(control_set)
 
-        elif isinstance(element, ControlSet):
-            # wrap the element in a control mode
-            control_mode = ControlMode(name=element.name)
-            control_mode.add(element)
-
-        elif isinstance(element, Controller):
-            # wrap the element in a control set inside a control mode
-            control_set = self.default_control_set()
-            control_set.add(element)
-
-            control_mode = ControlMode(name=element.name)
-            control_mode.add(control_set)
-
-        # add the control mode
-        return super().add(control_mode)
+        return self.add(control_mode)
