@@ -8,7 +8,3 @@ class ControlMode(HAElement):
     ALLOWED_CHILDREN = [ControlSet]
 
     name: str
-
-    @staticmethod
-    def from_controller(controller: str):
-        return None

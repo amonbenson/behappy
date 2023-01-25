@@ -4,11 +4,14 @@ from ha_element import HAElement
 
 @dataclass
 class Controller(HAElement):
-    name: str = 'unnamed_controller'
+    ELEMENT_NAME = 'Controller'
 
-    @property
-    def type(self) -> str:
-        return self.__class__.__name__
+    name: str
+    type: str = None
+
+    def __post_init__(self):
+        # set the type dynamically
+        self.type = self.__class__.__name__
 
 @dataclass
 class HTransformController(Controller):

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from ha_element import HAElement
 from controller import Controller
 
@@ -9,13 +9,16 @@ def decapitalize(string: str) -> str:
 
 @dataclass
 class ControlSet(HAElement):
+    ELEMENT_NAME = 'ControlSet'
     ALLOWED_CHILDREN = [Controller]
 
     name: str = 'default'
+    type: str = None
 
-    @property
-    def type(self) -> str:
-        return decapitalize(self.__class__.__name__)
+    def __post_init__(self):
+        # set the type dynamically
+        self.type = decapitalize(self.__class__.__name__)
+
 
 @dataclass
 class PandaControlSet(ControlSet):

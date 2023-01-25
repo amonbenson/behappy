@@ -58,7 +58,7 @@ class HybridAutomaton(HAElement):
 
         elif isinstance(element, Controller):
             # wrap the element in a control set inside a control mode
-            control_set = self.default_control_set(name='default')
+            control_set = self.default_control_set()
             control_set.add(element)
 
             control_mode = ControlMode(name=element.name)
