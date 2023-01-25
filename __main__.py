@@ -1,5 +1,5 @@
-from .hybrid_automaton import HybridAutomaton
-from .controller import HTransformController
+from hybrid_automaton import HybridAutomaton
+from controller import HTransformController
 
 
 if __name__ == '__main__':

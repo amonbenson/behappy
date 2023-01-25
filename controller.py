@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from .ha_element import HAElement
+from ha_element import HAElement
 
 
 @dataclass
