@@ -3,21 +3,7 @@ from __future__ import annotations
 import numpy as np
 from dataclasses import fields
 import xml.etree.ElementTree as ET
-
-
-def convert_attribute(attr: object) -> str:
-    if isinstance(attr, str):
-        return attr
-    elif isinstance(attr, (int, float)):
-        return str(attr)
-    elif isinstance(attr, bool):
-        return '1' if attr else '0'
-    elif isinstance(attr, np.ndarray):
-        shape = ','.join(map(str, attr.shape))
-        data = ', '.join(map(str, attr.flatten()))
-        return f"[{shape}]{data}"
-    else:
-        raise TypeError(f'Attribute of type {type(attr)} is not supported')
+from transform import Transform
 
 
 class HAElement():
@@ -30,6 +16,29 @@ class HAElement():
     _parent: HAElement = None
     _children: list[HAElement] = None
     _root: HAElement = None
+
+    def convert_attribute(self, attr: object) -> str:
+        if isinstance(attr, str):
+            return attr
+        elif isinstance(attr, bool):
+            return '1' if attr else '0'
+        elif isinstance(attr, (int, float)):
+            return str(attr)
+        elif isinstance(attr, np.ndarray):
+            # special case for empty arrays
+            if attr.size == 0:
+                return '[0,0]'
+
+            shape = ','.join(map(str, attr.shape))
+            matrix = attr.reshape(-1, attr.shape[-1])
+            data = '; '.join(map(lambda x: ', '.join(map(str, x)), matrix))
+            return f"[{shape}]{data}"
+        elif isinstance(attr, list):
+            return self.convert_attribute(np.array(attr))
+        elif isinstance(attr, Transform):
+            return self.convert_attribute(attr.M)
+        else:
+            raise TypeError(f'Attribute of type {type(attr)} is not supported')
 
     def xml(self) -> str:
         root = ET.Element(self.ELEMENT_NAME or self.__class__.__name__)
@@ -48,7 +57,7 @@ class HAElement():
                 continue
 
             # convert it to a string
-            attribute = convert_attribute(value)
+            attribute = self.convert_attribute(value)
             root.set(field.name, attribute)
 
         # append all children as elements

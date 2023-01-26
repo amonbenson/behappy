@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 from hybrid_automaton import HybridAutomaton
 from control_mode import ControlMode
@@ -41,16 +43,28 @@ def when(self, *jump_conditions: JumpCondition) -> ControlSwitch:
     return control_switch
 
 ControlMode.when = when
-ControlMode.when_time_elapsed = lambda self, time: self.when(ClockSensor().reached(np.array([[time]])))
+
+time_elapsed = lambda time: ClockSensor().reached(goal=np.array([[time]]),
+    goal_is_relative=True,
+    epsilon=0,
+    norm_weights=[],
+    jump_criterion="THRESH_UPPER_BOUND")
 
 
-def then(self, target: Controller):
-    # create a new control mode from the given target controller
-    self._root.control_mode(target)
+def then(self, *target: Controller | str, **kwargs) -> ControlMode:
+    # create a new control mode from the given controller
+    target = self._root.control_mode(*target, **kwargs)
 
-    # create the corresponding control switch
-    self._root.control_switch(self.parent.name, target.name)
+    # set the target of the control switch and add it to the ha
+    self.target = target.name
+    self.name = ControlSwitch.derive_name(self.source, target.name)
+    self._root.add(self)
 
     return target
 
-JumpCondition.then = then
+def end(self):
+    # return the final gravity comp controller
+    return self.then('finished')
+
+ControlSwitch.then = then
+ControlSwitch.end = end

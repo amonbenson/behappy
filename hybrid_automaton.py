@@ -6,7 +6,7 @@ from xml.dom import minidom
 from ha_element import HAElement
 from control_mode import ControlMode
 from control_set import ControlSet, PandaControlSet
-from controller import Controller
+from controller import Controller, GravityCompController
 from control_switch import ControlSwitch
 import rospy
 from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
@@ -15,7 +15,7 @@ from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
 @dataclass
 class HybridAutomaton(HAElement):
     ALLOWED_CHILDREN = [ControlMode, ControlSwitch]
-    IGNORE_FIELDS = ['control_set']
+    IGNORE_FIELDS = ['control_set', 'update_topic']
 
     name: str
     current_control_mode: str = None
@@ -25,9 +25,16 @@ class HybridAutomaton(HAElement):
     def __post_init__(self):
         # HA is always the root element
         self._root = self
+
+        # create the defaul sink control mode
+        self.control_mode(GravityCompController(name='finished'))
+        self.current_control_mode = 'finished'
     
     def find(self, name: str) -> HAElement | None:
-        for child in self.children:
+        if self._children is None:
+            return None
+
+        for child in self._children:
             if child.name == name:
                 return child
 
@@ -52,7 +59,31 @@ class HybridAutomaton(HAElement):
         # publish the xml
         update(self.xml(indent=0))
 
-    def control_mode(self, *controllers: Controller) -> ControlMode:        
+    def control_mode(self, *controllers: Controller | str, name: str = None) -> ControlMode:
+        # try to get the name from the first karg
+        if len(controllers) == 1 and isinstance(controllers[0], str):
+            name = controllers[0]
+            controllers = []
+
+        # validate
+        if len(controllers) == 0 and name is None:
+            raise ValueError('No controllers given')
+        if len(controllers) > 1 and name is None:
+            raise ValueError('Multiple controllers given, but no name')
+        
+        # try to get the name from the first controller
+        if len(controllers) > 0 and name is None:
+            name = controllers[0].name
+
+        # if the control mode already exists, return it
+        control_mode = self.find(name)
+        if control_mode is not None:
+            return control_mode
+
+        # if only a name was provided, but no exisitng control mode was found, raise an error
+        if len(controllers) == 0:
+            raise ValueError('No controllers given')
+
         # create a new control set
         control_set = self.control_set()
 
