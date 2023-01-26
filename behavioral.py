@@ -62,9 +62,9 @@ def then(self, *target: Controller | str, **kwargs) -> ControlMode:
 
     return target
 
-def end(self):
+def finish(self):
     # return the final gravity comp controller
     return self.then('finished')
 
 ControlSwitch.then = then
-ControlSwitch.end = end
+ControlSwitch.finish = finish
