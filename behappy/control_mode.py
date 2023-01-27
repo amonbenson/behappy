@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from ha_element import HAElement
-from control_set import ControlSet
-from control_switch import ControlSwitch
-from jump_condition import JumpCondition
+from .ha_element import HAElement
+from .control_set import ControlSet
+from .control_switch import ControlSwitch
+from .jump_condition import JumpCondition
 
 
 @dataclass

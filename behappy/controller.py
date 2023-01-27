@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
-from ha_element import HAElement
+from .ha_element import HAElement
 
 
 @dataclass

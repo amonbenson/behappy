@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from ha_element import HAElement
+from .ha_element import HAElement
 
 
 class JumpCriterion(Enum):

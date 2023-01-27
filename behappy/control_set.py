@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
-from ha_element import HAElement
-from controller import Controller
+from .ha_element import HAElement
+from .controller import Controller
 
 
 def decapitalize(string: str) -> str:

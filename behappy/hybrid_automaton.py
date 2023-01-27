@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from ha_element import HAElement
-from control_mode import ControlMode
-from control_set import ControlSet, PandaControlSet
-from controller import Controller, GravityCompController
-from control_switch import ControlSwitch
+from .ha_element import HAElement
+from .control_mode import ControlMode
+from .control_set import ControlSet, PandaControlSet
+from .controller import Controller, GravityCompController
+from .control_switch import ControlSwitch
 import rospy
 from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
 

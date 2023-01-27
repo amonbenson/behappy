@@ -4,7 +4,7 @@ import numpy as np
 from dataclasses import fields
 import xml.etree.ElementTree as ET
 from enum import Enum
-from transform import Transform
+from .transform import Transform
 
 
 class HAElement():

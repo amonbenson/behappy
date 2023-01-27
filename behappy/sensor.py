@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from jump_condition import JumpCondition, JumpCriterion
-from ha_element import HAElement
+from .jump_condition import JumpCondition, JumpCriterion
+from .ha_element import HAElement
 import numpy as np
 
 
