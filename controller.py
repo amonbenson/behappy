@@ -34,6 +34,10 @@ class Controller(HAElement):
         self.type = self.__class__.__name__
 
 @dataclass
+class JointPositionController(Controller):
+    pass
+
+@dataclass
 class DisplacementController(Controller):
     if_interpolation: bool = True
 

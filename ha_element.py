@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 from dataclasses import fields
 import xml.etree.ElementTree as ET
+from enum import Enum
 from transform import Transform
 
 
@@ -24,6 +25,8 @@ class HAElement():
             return '1' if attr else '0'
         elif isinstance(attr, (int, float)):
             return str(attr)
+        elif isinstance(attr, Enum):
+            return attr.name
         elif isinstance(attr, np.ndarray):
             # special case for empty arrays
             if attr.size == 0:
@@ -31,7 +34,7 @@ class HAElement():
 
             shape = ','.join(map(str, attr.shape))
             matrix = attr.reshape(-1, attr.shape[-1])
-            data = '; '.join(map(lambda x: ', '.join(map(str, x)), matrix))
+            data = ';'.join(map(lambda x: ','.join(map(str, x)), matrix))
             return f"[{shape}]{data}"
         elif isinstance(attr, list):
             return self.convert_attribute(np.array(attr))

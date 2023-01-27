@@ -52,33 +52,40 @@ class HybridAutomaton(HAElement):
 
         return xml
 
-    def run(self):
-        # create the publisher
-        update = rospy.ServiceProxy(self.update_topic, UpdateHybridAutomaton)
+    def start(self, *controllers: Controller) -> ControlMode:
+        # add the element to the tree
+        # (as this might wrap it in a control mode, we need to catch the returned element)
+        element = self.control_mode(*controllers)
 
-        # publish the xml
-        update(self.xml(indent=0))
+        # initialize the current control mode
+        self.current_control_mode = element.name
+
+        return element
 
     def control_mode(self, *controllers: Controller | str, name: str = None) -> ControlMode:
-        # try to get the name from the first karg
-        if len(controllers) == 1 and isinstance(controllers[0], str):
+        # extract the name if it was passed as the first argument
+        if len(controllers) > 0 and isinstance(controllers[0], str):
             name = controllers[0]
-            controllers = []
+            controllers = controllers[1:]
 
-        # validate
-        if len(controllers) == 0 and name is None:
+        # if only a name was provided, return an existing control mode
+        if len(controllers) == 0 and name is not None:
+            control_mode = self.find(name)
+            if control_mode is None:
+                raise ValueError('No control mode with name {} found'.format(name))
+            return control_mode
+
+        # validate the number of controllers
+        if len(controllers) == 0:
             raise ValueError('No controllers given')
+        if len(controllers) == 1 and name is None:
+            name = controllers[0].name
         if len(controllers) > 1 and name is None:
             raise ValueError('Multiple controllers given, but no name')
-        
-        # try to get the name from the first controller
-        if len(controllers) > 0 and name is None:
-            name = controllers[0].name
 
-        # if the control mode already exists, return it
-        control_mode = self.find(name)
-        if control_mode is not None:
-            return control_mode
+        # if the control mode already exists, raise an error
+        if self.find(name) is not None:
+            raise ValueError('Control mode with name {} already exists'.format(name))
 
         # if only a name was provided, but no exisitng control mode was found, raise an error
         if len(controllers) == 0:
@@ -96,3 +103,10 @@ class HybridAutomaton(HAElement):
         control_mode.add(control_set)
 
         return self.add(control_mode)
+
+    def run(self):
+        # create the publisher
+        update = rospy.ServiceProxy(self.update_topic, UpdateHybridAutomaton)
+
+        # publish the xml
+        update(self.xml(indent=0))
