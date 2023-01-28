@@ -52,6 +52,14 @@ class HybridAutomaton(Element):
 
         return None
 
+    @property
+    def first_child(self) -> Element:
+        return self._children[0] if self._children else None
+
+    @property
+    def last_child(self) -> Element:
+        return self._children[-1] if self._children else None
+
     def xml(self, *, indent: int = 0) -> str:
         # invoke the default xml generator
         xml = super().xml()

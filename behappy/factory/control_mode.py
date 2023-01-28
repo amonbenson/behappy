@@ -1,10 +1,15 @@
 from dataclasses import dataclass
 from copy import deepcopy
+from typing import TYPE_CHECKING
 from .factory import Factory, FactoryCollection
+from .control_switch import ControlSwitchFactory, ControlSwitchFactoryCollection
 from ..ha.element import Element
 from ..ha.control_mode import ControlMode
 from ..ha.control_set import PandaControlSet
 from ..ha.controller import Controller
+
+if TYPE_CHECKING:
+    from .jump_condition import JumpConditionFactory
 
 
 @dataclass
@@ -14,16 +19,19 @@ class ControlModeFactory(Factory):
 
     name: str = None
 
+    def __post_init__(self):
+        super().__init__()
+
     def produce(self, dst: Element):
         # extract the name from the first controller
         if self.name is None and len(self._children) == 1:
             self.name = self._children[0].name
 
         # validate fields
-        if self.name is None:
-            raise ValueError("No name fiven")
         if len(self._children) == 0:
             raise ValueError("No controllers given")
+        if self.name is None:
+            raise ValueError("No name given")
         
         # deepcopy the controllers
         controllers = map(deepcopy, self._children)
@@ -42,6 +50,6 @@ class ControlModeFactory(Factory):
         dst.add(control_mode)
 
 @dataclass
-class ControlModeCollectionFactory(FactoryCollection):
+class ControlModeFactoryCollection(FactoryCollection):
     ALLOWED_CHILDREN = [ControlModeFactory]
     PRIORITY = 10

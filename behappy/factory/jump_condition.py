@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from copy import deepcopy
 from .factory import Factory
-from .control_mode import ControlModeFactory
 from ..ha.element import Element
 from ..ha.jump_condition import JumpCondition
+from ..ha.control_mode import ControlMode
 from ..ha.sensor import Sensor
 
 
@@ -14,8 +14,8 @@ class JumpConditionFactory(Factory):
 
     sensor: Sensor = None
     jump_condition: JumpCondition = None
-    source: ControlModeFactory = None
-    target: ControlModeFactory = None
+    source: ControlMode = None
+    target: ControlMode = None
 
     def produce(self, dst: Element):
         # validate fields
