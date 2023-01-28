@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from copy import deepcopy
 from .factory import Factory
 from .control_mode import ControlModeFactory
-from ..element import Element
-from ..jump_condition import JumpCondition
-from ..sensor import Sensor
+from ..ha.element import Element
+from ..ha.jump_condition import JumpCondition
+from ..ha.sensor import Sensor
 
 
 @dataclass

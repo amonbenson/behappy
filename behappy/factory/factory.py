@@ -1,21 +1,22 @@
 from dataclasses import dataclass
-from ..element import Element
+from abc import ABC, abstractmethod
+from ..ha.element import Element
 
 
 @dataclass
-class Factory(Element):
+class Factory(Element, ABC):
+    ALLOWED_CHILDREN = []
     PRIORITY = 0
 
-    def pre_xml(self):
-        # produce as the last step before converting to xml
-        self.produce()
+    @abstractmethod
+    def produce(self, dst: Element):
+        raise NotImplementedError()
 
-        # remove the factory itself from the element tree
-        self._parent.remove(self)
+
+class FactoryCollection(Factory):
+    ALLOWED_CHILDREN = [Factory]
 
     def produce(self, dst: Element):
-        self._children = self._children or []
-
         # produce all children onto the dst
         for child in self._children:
             child.produce(dst)

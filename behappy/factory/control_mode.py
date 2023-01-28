@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from copy import deepcopy
-from .factory import Factory
-from ..element import Element
-from ..control_mode import ControlMode
-from ..control_set import PandaControlSet
-from ..controller import Controller
+from .factory import Factory, FactoryCollection
+from ..ha.element import Element
+from ..ha.control_mode import ControlMode
+from ..ha.control_set import PandaControlSet
+from ..ha.controller import Controller
 
 
 @dataclass
@@ -15,7 +15,6 @@ class ControlModeFactory(Factory):
     name: str = None
 
     def produce(self, dst: Element):
-        print(self)
         # extract the name from the first controller
         if self.name is None and len(self._children) == 1:
             self.name = self._children[0].name
@@ -43,6 +42,6 @@ class ControlModeFactory(Factory):
         dst.add(control_mode)
 
 @dataclass
-class ControlModeCollectionFactory(Factory):
+class ControlModeCollectionFactory(FactoryCollection):
     ALLOWED_CHILDREN = [ControlModeFactory]
     PRIORITY = 10

@@ -1,3 +1,4 @@
+from .producable_ha import ProducableHybridAutomaton
 from .factory import *
 from .control_mode import *
 from .control_switch import *

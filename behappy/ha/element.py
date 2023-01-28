@@ -86,9 +86,6 @@ class Element():
         # make sure the children list exists
         self._children = self._children or []
 
-        # apply the pre function
-        self.pre_add(child)
-
         # check if the child element is allowed
         if self.ALLOWED_CHILDREN is None or not isinstance(child, tuple(self.ALLOWED_CHILDREN)):
             raise TypeError(f'Element of type {child.__class__.__name__} is not allowed as a child of {self.__class__.__name__}')
@@ -97,9 +94,6 @@ class Element():
         child.set_root(self._root)
         child._parent = self
         self._children.append(child)
-
-        # apply the post function
-        child = self.post_add(child)
 
         return self
 
@@ -127,10 +121,3 @@ class Element():
             self.remove(child)
 
         return self
-
-    def pre_add(self, child: Element) -> Element:
-        return child
-
-    def post_add(self, child) -> Element:
-        return child
-

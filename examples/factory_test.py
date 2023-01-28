@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from behappy import *
 
 
-ha = HybridAutomaton('factory_test')
+ha = ProducableHybridAutomaton('factory_test')
 
 mode_0 = ControlModeFactory().add(JointPositionController(name='mode_0'))
 mode_1 = ControlModeFactory().add(JointPositionController(name='mode_1'))

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from .factory import Factory
+from .factory import Factory, FactoryCollection
 from .jump_condition import JumpConditionFactory
 from .control_mode import ControlModeCollectionFactory
-from ..element import Element
-from ..control_switch import ControlSwitch
+from ..ha.element import Element
+from ..ha.control_switch import ControlSwitch
 
 
 @dataclass
@@ -39,6 +39,6 @@ class ControlSwitchFactory(Factory):
                 dst.add(control_switch)
 
 @dataclass
-class ControlSwitchCollectionFactory(Factory):
+class ControlSwitchCollectionFactory(FactoryCollection):
     ALLOWED_CHILDREN = [ControlSwitchFactory]
     PRIORITY = 1
