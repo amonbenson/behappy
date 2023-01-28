@@ -20,6 +20,11 @@ class ControlSet(XMLElement):
         # dynamically set the type
         self.type = decapitalize(self.__class__.__name__)
 
+    @property
+    def controllers(self) -> list[Controller]:
+        # all children are controllers
+        return self._children
+
 @dataclass
 class PandaControlSet(ControlSet):
     pass
@@ -36,7 +41,7 @@ class ControlMode(ControlBlock):
         return self._children[0]
 
     @staticmethod
-    def from_controllers(*controllers: list[Controller], name: str = None):
+    def from_controllers(*controllers: list[Controller], name: str = None) -> ControlMode:
         # validate the controllers
         if len(controllers) == 0:
             raise ValueError("No controllers given")
