@@ -7,7 +7,7 @@ sudo apt-get upgrade -y
 # install miniconda
 wget -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod +x miniconda.sh
-bash miniconda.sh -b -u
+bash miniconda.sh -b
 rm miniconda.sh
 
 # init conda base workspace

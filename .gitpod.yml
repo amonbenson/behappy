@@ -3,4 +3,6 @@ vscode:
     - ms-python.python
 
 tasks:
-  - init: ./setup.sh
+  - init: |
+      ./setup.sh
+      source ~/.bashrc
