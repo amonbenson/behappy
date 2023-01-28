@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from dataclasses import dataclass
-from .ha_element import HAElement
+from .element import Element
 from .jump_condition import JumpCondition
 from .controller import Controller
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class ControlSwitch(HAElement):
+class ControlSwitch(Element):
     ALLOWED_CHILDREN = [JumpCondition]
 
     name: str

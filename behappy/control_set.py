@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from .ha_element import HAElement
+from .element import Element
 from .controller import Controller
 
 
@@ -8,7 +8,7 @@ def decapitalize(string: str) -> str:
 
 
 @dataclass
-class ControlSet(HAElement):
+class ControlSet(Element):
     ELEMENT_NAME = 'ControlSet'
     ALLOWED_CHILDREN = [Controller]
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
-from .ha_element import HAElement
+from .element import Element
 
 
 class JumpCriterion(Enum):
@@ -15,7 +15,7 @@ class JumpCriterion(Enum):
 
 
 @dataclass
-class JumpCondition(HAElement):
+class JumpCondition(Element):
     ALLOWED_CHILDREN = [] # overwritten by sensor module to be [Sensor]. This is a hack to avoid circular imports.
 
     goal: np.ndarray

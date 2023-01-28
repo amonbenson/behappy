@@ -1,19 +1,23 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from .ha_element import HAElement
+import warnings
+from .element import Element
 from .control_mode import ControlMode
 from .control_set import ControlSet, PandaControlSet
 from .controller import Controller, GravityCompController
 from .control_switch import ControlSwitch
-import rospy
-from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
+
+if 'BEHAPPY_NO_ROSPY' not in os.environ:
+    import rospy
+    from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
 
 
 @dataclass
-class HybridAutomaton(HAElement):
+class HybridAutomaton(Element):
     ALLOWED_CHILDREN = [ControlMode, ControlSwitch]
     IGNORE_FIELDS = ['control_set', 'update_topic']
 
@@ -30,7 +34,7 @@ class HybridAutomaton(HAElement):
         self.control_mode(GravityCompController(name='finished'))
         self.current_control_mode = 'finished'
     
-    def find(self, name: str) -> HAElement | None:
+    def find(self, name: str) -> Element | None:
         if self._children is None:
             return None
 
@@ -105,6 +109,10 @@ class HybridAutomaton(HAElement):
         return self.add(control_mode)
 
     def run(self):
+        if 'BEHAPPY_NO_ROSPY' in os.environ:
+            warnings.warn("Cannot run: BEHAPPY_NO_ROSPY was specified")
+            return
+
         # create the publisher
         update = rospy.ServiceProxy(self.update_topic, UpdateHybridAutomaton)
 

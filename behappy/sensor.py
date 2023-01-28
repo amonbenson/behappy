@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from .jump_condition import JumpCondition, JumpCriterion
-from .ha_element import HAElement
+from .element import Element
 import numpy as np
 
 
 @dataclass
-class Sensor(HAElement):
+class Sensor(Element):
     ELEMENT_NAME = 'Sensor'
 
     type: str = None

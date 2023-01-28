@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from .ha_element import HAElement
+from .element import Element
 from .control_set import ControlSet
 from .control_switch import ControlSwitch
 from .jump_condition import JumpCondition
 
 
 @dataclass
-class ControlMode(HAElement):
+class ControlMode(Element):
     ALLOWED_CHILDREN = [ControlSet]
 
     name: str

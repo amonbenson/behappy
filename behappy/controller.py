@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 import numpy as np
-from .ha_element import HAElement
+from .element import Element
 
 
 @dataclass
-class Controller(HAElement):
+class Controller(Element):
     ELEMENT_NAME = 'Controller'
 
     name: str
