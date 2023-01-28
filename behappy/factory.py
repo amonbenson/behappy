@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from copy import deepcopy
 from .element import Element
 from .control_set import PandaControlSet
 from .control_mode import ControlMode
@@ -47,12 +48,15 @@ class ControlModeFactory(Factory):
             raise ValueError("No name fiven")
         if len(self._children) == 0:
             raise ValueError("No controllers given")
+        
+        # deepcopy the controllers
+        controllers = map(deepcopy, self._children)
 
         # create a new default control set
         control_set = PandaControlSet(name='default')
 
         # add all controllers to this set
-        control_set.add_all(self._children)
+        control_set.add_all(controllers)
 
         # create a new mode where we add the control set to
         control_mode = ControlMode(name=self.name)
@@ -87,9 +91,13 @@ class JumpConditionFactory(Factory):
         if self.target is None:
             raise ValueError("No target given")
 
+        # create deepcopies of the required elements
+        sensor = deepcopy(self.sensor)
+        jump_condition = deepcopy(self.jump_condition)
+
         # add the sensor to the jump condition and add that to the factory destination
-        self.jump_condition.add(self.sensor)
-        dst.add(self.jump_condition)
+        jump_condition.add(sensor)
+        dst.add(jump_condition)
         
 
 @dataclass
@@ -97,7 +105,6 @@ class ControlSwitchFactory(Factory):
     ALLOWED_CHILDREN = [JumpConditionFactory]
     PRIORITY = 1
 
-    name: str = None
     sources: ControlModeCollectionFactory = None
     targets: ControlModeCollectionFactory = None
 
@@ -113,7 +120,8 @@ class ControlSwitchFactory(Factory):
         # iterate through each source and each target
         for source in self.sources._children:
             for target in self.targets._children:
-                control_switch = ControlSwitch(name=self.name, source=source.name, target=target.name)
+                name = f"{source.name}_to_{target.name}"
+                control_switch = ControlSwitch(name=name, source=source.name, target=target.name)
 
                 # produce the jump conditions to the control switch
                 for jc in self._children:

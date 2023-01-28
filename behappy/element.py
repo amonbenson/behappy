@@ -17,9 +17,6 @@ class Element():
     _children: list[Element] = None
     _root: Element = None
 
-    def __init__(self):
-        self._children = []
-
     @staticmethod
     def convert_attribute(attr: object) -> str:
         if isinstance(attr, str):

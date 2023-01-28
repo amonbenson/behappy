@@ -21,9 +21,9 @@ ha.add(cmc)
 
 # try adding a single control switch
 jc1 = JumpConditionFactory(ClockSensor(), JumpCondition(goal=None, norm_weights=None))
-cs = ControlSwitchFactory(name='single_switch',
-    sources=ControlModeCollectionFactory().add(mode_0),
-    targets=ControlModeCollectionFactory().add(mode_1)).add(jc1)
+cs = ControlSwitchFactory(
+    sources=ControlModeCollectionFactory().add(mode_0).add(mode_2),
+    targets=ControlModeCollectionFactory().add(mode_1).add(mode_2)).add(jc1)
 ha.add(cs)
 
 
