@@ -10,6 +10,7 @@ from .control_mode import ControlMode
 from .control_set import ControlSet, PandaControlSet
 from .controller import Controller, GravityCompController
 from .control_switch import ControlSwitch
+from .factory import Factory
 
 if 'BEHAPPY_NO_ROSPY' not in os.environ:
     import rospy
@@ -18,7 +19,7 @@ if 'BEHAPPY_NO_ROSPY' not in os.environ:
 
 @dataclass
 class HybridAutomaton(Element):
-    ALLOWED_CHILDREN = [ControlMode, ControlSwitch]
+    ALLOWED_CHILDREN = [ControlMode, ControlSwitch, Factory]
     IGNORE_FIELDS = ['control_set', 'update_topic']
 
     name: str
@@ -45,8 +46,20 @@ class HybridAutomaton(Element):
         return None
 
     def xml(self, *, indent: int = 0) -> str:
+        # extract all factories
+        factories = filter(lambda el: isinstance(el, Factory), self._children)
+        factories = sorted(factories, key=lambda factory: factory.PRIORITY, reverse=True)
+        factories = list(factories)
 
-        # call the automatic xml generation from strings
+        # remove the factory children
+        self._children = filter(lambda el: not isinstance(el, Factory), self._children)
+        self._children = list(self._children)
+
+        # invoke the factory production
+        for factory in factories:
+            factory.produce(self)
+
+        # invoke the default xml generator
         xml = super().xml()
 
         # apply indentation

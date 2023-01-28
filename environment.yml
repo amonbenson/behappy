@@ -1,7 +1,9 @@
 name: behappy
 
 dependencies:
-  - python=3.10
+  - python=3.8
   - pip=22.3
-  - numpy=1.24
-  - transforms3=0.4.1
+
+  - pip:
+    - numpy==1.24
+    - transforms3d==0.4.1

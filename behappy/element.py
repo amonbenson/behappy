@@ -12,13 +12,13 @@ class Element():
     EXPORT_FIELDS: list[str] = None
     IGNORE_FIELDS: list[str] = None
     ALLOWED_CHILDREN: list[type[Element]] = None
-    ALLOW_NONE_ATTRIBUTES: bool = True
 
     _parent: Element = None
     _children: list[Element] = None
     _root: Element = None
 
-    def convert_attribute(self, attr: object) -> str:
+    @staticmethod
+    def convert_attribute(attr: object) -> str:
         if isinstance(attr, str):
             return attr
         elif isinstance(attr, bool):
@@ -44,11 +44,9 @@ class Element():
             raise TypeError(f'Attribute of type {type(attr)} is not supported')
 
     def xml(self) -> str:
-        # run the pre xml function
-        self.pre_xml()
-
         # create the root element
-        root = ET.Element(self.ELEMENT_NAME or self.__class__.__name__)
+        name = self.ELEMENT_NAME or self.__class__.__name__
+        root = ET.Element(name)
 
         # append all dataclass fields as attributes
         for field in fields(self):
@@ -60,26 +58,20 @@ class Element():
             # get the attribute value
             value = getattr(self, field.name)
 
-            if self.ALLOW_NONE_ATTRIBUTES and value is None:
+            # skip None type attributes (this will instruct the HA to use a default value)
+            if value is None:
                 continue
 
             # convert it to a string
-            attribute = self.convert_attribute(value)
+            attribute = Element.convert_attribute(value)
             root.set(field.name, attribute)
 
         # append all children as elements
         for child in self._children or []:
             root.append(ET.fromstring(child.xml()))
 
-        # apply the post xml function
-        xml = self.post_xml(ET.tostring(root).decode('utf-8'))
-        return xml
-
-    def pre_xml(self):
-        pass
-
-    def post_xml(self, xml: str) -> str:
-        return xml
+        # convert the element into an XML string
+        return ET.tostring(root).decode('utf-8')
 
     def set_root(self, element: Element):
         if self._root == element:
@@ -90,13 +82,6 @@ class Element():
         for child in self._children or []:
             child.set_root(element)
 
-    def add_all(self, children: list[Element]) -> Element:
-        for child in children:
-            self.add(child)
-        
-        # return the last added child
-        return children[-1]
-
     def add(self, child: Element) -> Element:
         # make sure the children list exists
         self._children = self._children or []
@@ -106,7 +91,7 @@ class Element():
 
         # check if the child element is allowed
         if self.ALLOWED_CHILDREN is None or not isinstance(child, tuple(self.ALLOWED_CHILDREN)):
-            raise TypeError(f'Element of type {element.__class__.__name__} is not allowed as a child of {self.__class__.__name__}')
+            raise TypeError(f'Element of type {child.__class__.__name__} is not allowed as a child of {self.__class__.__name__}')
 
         # link the element to the HA tree
         child.set_root(self._root)
@@ -118,6 +103,33 @@ class Element():
 
         # return the element for chaining
         return child
+
+    def add_all(self, children: list[Element]) -> Element:
+        # add each child
+        for child in children:
+            self.add(child)
+        
+        # return the last added child
+        return children[-1]
+
+    def remove(self, child: Element) -> Element:
+        if not child in self._children:
+            raise ValueError(f"Element {child} was not found")
+        
+        # unlink the child from the HA tree
+        child.set_root(None)
+        child._parent = None
+        self._children.remove(child)
+
+        return child
+
+    def remove_all(self, children: list[Element]) -> Element:
+        # remove each child
+        for child in children:
+            self.remove(child)
+        
+        # return the last removed child
+        return children[-1]
 
     def pre_add(self, child: Element) -> Element:
         return child

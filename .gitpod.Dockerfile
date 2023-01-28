@@ -16,6 +16,6 @@ RUN <<EOR
     conda init
 
     # create the custom environment file
-    conda env create -f environment.yml
+    conda env create -f environment.yml --force
     conda activate behappy
 EOR
