@@ -12,7 +12,6 @@ from .sensor import Sensor
 
 @dataclass
 class Factory(Element):
-    ALLOWED_CHILDREN = ['Factory']
     PRIORITY = 0
 
     def pre_xml(self):
@@ -32,31 +31,31 @@ class Factory(Element):
 
 @dataclass
 class ControlModeFactory(Factory):
+    ALLOWED_CHILDREN = [Controller]
     PRIORITY = 10
 
     name: str = None
-    controllers: list[Controller] = field(default_factory=list)
 
     def produce(self, dst: Element):
+        print(self)
         # extract the name from the first controller
-        if self.name is None and len(self.controllers) == 1:
-            self.name = self.controllers[0].name
+        if self.name is None and len(self._children) == 1:
+            self.name = self._children[0].name
 
         # validate fields
         if self.name is None:
             raise ValueError("No name fiven")
-        if len(self.controllers) == 0:
+        if len(self._children) == 0:
             raise ValueError("No controllers given")
 
         # create a new default control set
         control_set = PandaControlSet(name='default')
 
         # add all controllers to this set
-        for controller in self.controllers:
-            control_set.add(controller)
+        control_set.add_all(self._children)
 
         # create a new mode where we add the control set to
-        control_mode = ControlMode(name=controller.name)
+        control_mode = ControlMode(name=self.name)
         control_mode.add(control_set)
 
         # add the control mode to the dst
@@ -69,6 +68,7 @@ class ControlModeCollectionFactory(Factory):
 
 @dataclass
 class JumpConditionFactory(Factory):
+    ALLOWED_CHILDREN = []
     PRIORITY = 2
 
     sensor: Sensor = None
@@ -94,23 +94,37 @@ class JumpConditionFactory(Factory):
 
 @dataclass
 class ControlSwitchFactory(Factory):
+    ALLOWED_CHILDREN = [JumpConditionFactory]
     PRIORITY = 1
 
     name: str = None
-    jump_conditions: list[JumpConditionFactory] = field(default_factory=list)
     sources: ControlModeCollectionFactory = None
     targets: ControlModeCollectionFactory = None
 
     def produce(self, dst: Element):
         # validate fields
-        if len(self.jump_conditions) == 0:
+        if len(self._children) == 0:
             raise ValueError("No jump connditions given")
-        if self.source is None:
-            raise ValueError("No source given")
-        if self.target is None:
-            raise ValueError("No target given")
+        if self.sources is None:
+            raise ValueError("No sources given")
+        if self.targets is None:
+            raise ValueError("No targets given")
         
         # iterate through each source and each target
         for source in self.sources._children:
             for target in self.targets._children:
-                control_switch = ControlSwitch(name=self.name, source=self.source)
+                control_switch = ControlSwitch(name=self.name, source=source.name, target=target.name)
+
+                # produce the jump conditions to the control switch
+                for jc in self._children:
+                    jc.source = source
+                    jc.target = target
+                    jc.produce(control_switch)
+                
+                # add the control switch to the factory destination
+                dst.add(control_switch)
+
+@dataclass
+class ControlSwitchCollectionFactory(Factory):
+    ALLOWED_CHILDREN = [ControlSwitchFactory]
+    PRIORITY = 1

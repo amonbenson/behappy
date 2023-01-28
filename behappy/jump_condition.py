@@ -19,7 +19,7 @@ class JumpCondition(Element):
     ALLOWED_CHILDREN = [] # overwritten by sensor module to be [Sensor]. This is a hack to avoid circular imports.
 
     goal: np.ndarray
-    norm_weights: np.ndarray
+    norm_weights: np.ndarray = None
     goal_is_relative: bool = False
     epsilon: float = 0.01
     negate: bool = False

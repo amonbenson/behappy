@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
-from dataclasses import fields
+from dataclasses import dataclass, field, fields
 import xml.etree.ElementTree as ET
 from enum import Enum
 from .transform import Transform
@@ -11,11 +11,14 @@ class Element():
     ELEMENT_NAME: str = None
     EXPORT_FIELDS: list[str] = None
     IGNORE_FIELDS: list[str] = None
-    ALLOWED_CHILDREN: list[type[Element]] = None
+    ALLOWED_CHILDREN: Optional[list[type[Element]]] = None
 
     _parent: Element = None
     _children: list[Element] = None
     _root: Element = None
+
+    def __init__(self):
+        self._children = []
 
     @staticmethod
     def convert_attribute(attr: object) -> str:
@@ -101,16 +104,14 @@ class Element():
         # apply the post function
         child = self.post_add(child)
 
-        # return the element for chaining
-        return child
+        return self
 
     def add_all(self, children: list[Element]) -> Element:
         # add each child
         for child in children:
             self.add(child)
-        
-        # return the last added child
-        return children[-1]
+
+        return self
 
     def remove(self, child: Element) -> Element:
         if not child in self._children:
@@ -121,15 +122,14 @@ class Element():
         child._parent = None
         self._children.remove(child)
 
-        return child
+        return self
 
     def remove_all(self, children: list[Element]) -> Element:
         # remove each child
         for child in children:
             self.remove(child)
-        
-        # return the last removed child
-        return children[-1]
+
+        return self
 
     def pre_add(self, child: Element) -> Element:
         return child

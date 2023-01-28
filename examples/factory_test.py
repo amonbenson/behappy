@@ -6,15 +6,25 @@ from behappy import *
 
 ha = HybridAutomaton('factory_test')
 
+mode_0 = ControlModeFactory().add(JointPositionController(name='mode_0'))
+mode_1 = ControlModeFactory().add(JointPositionController(name='mode_1'))
+mode_2 = ControlModeFactory().add(JointPositionController(name='mode_2'))
+
 # try adding a single control mode
-cm = ControlModeFactory(controllers=[JointPositionController(name='single_first')])
-ha.add(cm)
+ha.add(mode_0)
 
 # try adding a control mode collection
 cmc = ControlModeCollectionFactory()
-cmc.add(ControlModeFactory(controllers=[JointPositionController(name='collection_first')]))
-cmc.add(ControlModeFactory(controllers=[JointPositionController(name='collection_second')]))
+cmc.add(mode_1)
+cmc.add(mode_2)
 ha.add(cmc)
+
+# try adding a single control switch
+jc1 = JumpConditionFactory(ClockSensor(), JumpCondition(goal=None, norm_weights=None))
+cs = ControlSwitchFactory(name='single_switch',
+    sources=ControlModeCollectionFactory().add(mode_0),
+    targets=ControlModeCollectionFactory().add(mode_1)).add(jc1)
+ha.add(cs)
 
 
 print(ha.xml(indent=2))
