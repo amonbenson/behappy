@@ -1,0 +1,6 @@
+ControlModeCollectionFactory.and(*Controller) -> ControlModeCollectionFactory
+# ControlModeCollectionFactory.then(*Controller) -> ControlModeCollectionFactory
+ControlModeCollectionFactory.when(*JumpConditionFactory) -> ControlSwitchCollectionFactory
+
+ControlSwitchCollectionFactory.or() -> ControlSwitchCollectionFactory
+ControlSwitchCollectionFactory.then() -> ControlSwitch
