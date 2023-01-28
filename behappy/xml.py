@@ -14,12 +14,21 @@ def beautify(xml: str, *, indent: int = 2) -> str:
 @dataclass
 class XMLElement(ABC):
     ELEMENT_NAME = None
+    IGNORE_NONE = False
 
     _children: list[XMLElement] = field(default_factory=list, init=False, repr=False)
 
     def add(self, *children: XMLElement) -> XMLElement:
         self._children.extend(children)
         return self
+
+    @property
+    def first_child(self):
+        return self._children[0] if self._children else None
+
+    @property
+    def last_child(self):
+        return self._children[-1] if self._children else None
 
     @staticmethod
     def serialize_attribute(attr: object) -> str:
@@ -47,7 +56,10 @@ class XMLElement(ABC):
             value = getattr(self, field.name)
             attribute = XMLElement.serialize_attribute(value)
             if attribute is None:
-                raise ValueError(f"Cannot serialize attribute {self.__class__.__name__}.{field.name} = {value}")
+                if self.IGNORE_NONE:
+                    continue
+                else:
+                    raise ValueError(f"Cannot serialize attribute {self.__class__.__name__}.{field.name} = {value}")
 
             element.set(field.name, attribute)
 

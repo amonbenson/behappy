@@ -1,19 +1,24 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .control_block import ControlBlock
 from .controller import Controller
 from .xml import XMLElement
 
 
+def decapitalize(string: str) -> str:
+    return string[0].lower() + string[1:]
+
+
 @dataclass
 class ControlSet(XMLElement):
     ELEMENT_NAME = 'ControlSet'
-    type: str = None
+
+    type: str = field(init=False)
 
     def __post_init__(self):
         # dynamically set the type
-        self.type = self.__class__.__name__
+        self.type = decapitalize(self.__class__.__name__)
 
 @dataclass
 class PandaControlSet(ControlSet):
