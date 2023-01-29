@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from .xml import XMLElement, beautify
 from .control_mode import ControlMode
-from .controller import GravityCompController
+from .controller import Controller, GravityCompController
 from .control_switch import ControlSwitch
+from .jump_condition import JumpCondition
+from .sensor import ClockSensor
 
 
 @dataclass
@@ -25,10 +29,11 @@ class HybridAutomaton(XMLElement):
         if indent > 0:
             return beautify(xml, indent=indent)
 
-    def start(self, *controllers):
+    def start(self, *controllers: list[Controller], name: str = None):
         # create a new control mode and set it as the current one
         return ControlModeBehavior(self,
             controllers=controllers,
+            name=name,
             set_as_current=True)
 
 
@@ -42,11 +47,22 @@ class Behavior(ABC):
 
 @dataclass
 class JumpConditionBehavior(Behavior):
-    pass
+    ha: HybridAutomaton = field(init=False)
+    source: ControlMode = field(init=False)
+    target: ControlMode = field(init=False)
+
+@dataclass
+class TimeElapsed(JumpConditionBehavior):
+    time: float
+
+    def _resolve(self) -> JumpCondition:
+        return JumpCondition.from_sensor(ClockSensor(), goal=self.time)
+
 
 @dataclass
 class ControlModeBehavior(Behavior):
     controllers: list[Controller] = field(default_factory=list)
+    name: str = None
     set_as_current: bool = False
     control_mode: ControlMode = field(init=False)
 
@@ -56,7 +72,7 @@ class ControlModeBehavior(Behavior):
 
     def _resolve(self) -> ControlMode:
         # create the control mode and add all controllers
-        control_mode = ControlMode()
+        control_mode = ControlMode.from_controllers(*self.controllers, name=self.name)
         control_mode.add(*self.controllers)
 
         # add the control mode to the ha
@@ -66,13 +82,14 @@ class ControlModeBehavior(Behavior):
 
         return control_mode
 
-    def when(self, *kargs, **kwargs):
+    def when(self, *jump_conditions):
         # create a control switch and assign the source
         cs_behavior = ControlSwitchBehavior(self.ha,
+            jump_conditions=jump_conditions,
             source=self.control_mode)
         return cs_behavior
 
-    def then(self, *kargs, **kwargs):
+    def then(self, *controllers):
         raise NotImplementedError()
 
     def finish(self):
@@ -80,9 +97,14 @@ class ControlModeBehavior(Behavior):
 
 @dataclass
 class ControlSwitchBehavior(Behavior):
+    jump_conditions: list[JumpConditionBehavior]
     source: ControlMode = None
     target: ControlMode = None
-    jump_condition_behaviors: list[JumpConditionBehavior] = field(default_factory=list)
+
+    def __post_init__(self):
+        # setup all jump conditions
+        for jc in self.jump_conditions:
+            jc.ha = self.ha
 
     def _resolve(self) -> ControlSwitch:
         # set the source and target and assign a unique name
@@ -90,28 +112,31 @@ class ControlSwitchBehavior(Behavior):
             source=self.source.name,
             target=self.target.name)
 
-        # resolve the jump conditions
-        # TODO
+        # resolve all jump conditions
+        for jc in self.jump_conditions:
+            # setup the jump condition references and resolve it
+            jc.source = self.source
+            jc.target = self.target
+            control_switch.add(jc._resolve())
+
+        self.ha.add(control_switch)
 
         return control_switch
-
-    def _add_jump_condition(self, jump_condition: JumpCondition | JumpConditionBehavior):
-        self.jump_condition_behaviors.append(jump_condition)
 
     def then(self, *controllers):
         # create a target control mode
         cm_behavior = ControlModeBehavior(self.ha, controllers=controllers)
 
-        # add the target control mode
-        self.ha.add(target)
+        # set the target control mode and resolve
+        self.target = cm_behavior.control_mode
+        control_switch = self._resolve()
 
-        return ControlModeBehavior(self.ha, target)
+        return cm_behavior
 
     def finish(self):
         # use the ha sink as the target
-        self._resolve(self.ha.sink)
+        self.target = self.ha.sink
+        self._resolve()
+
         return self.ha
 
-    @staticmethod
-    def from_source(ha: HybridAutomaton, source: ControlMode) -> ControlSwitch:
-        behav = ControlSwitchBehavior(ha, source, None, ControlSwitch(), [])

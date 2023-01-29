@@ -17,6 +17,8 @@ class JumpCriterion(Enum):
 
 @dataclass
 class JumpCondition(XMLElement):
+    IGNORE_NONE = True
+
     goal: np.ndarray
     goal_is_relative: bool = False
 
