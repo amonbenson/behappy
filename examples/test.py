@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from behappy import *
 
 
-ha = (HybridAutomaton('test')
+ha = (hybrid_automaton('test')
     .start(JointPositionController('joint_pos', goal=None))
     .when(TimeElapsed(3.0))
     .then(GravityCompController('grav_comp'))
