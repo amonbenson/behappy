@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from .control_block import ControlBlock
 from .controller import Controller
 from .xml import XMLElement
 
@@ -30,7 +29,9 @@ class PandaControlSet(ControlSet):
     pass
 
 @dataclass
-class ControlMode(ControlBlock):
+class ControlMode(XMLElement):
+    name: str
+
     def __post_init__(self):
         # create the control set
         self.add(PandaControlSet())

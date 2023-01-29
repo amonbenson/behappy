@@ -1,26 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from .control_block import ControlBlock
 from .xml import XMLElement
+from .jump_condition import JumpCondition
 
 
 @dataclass
-class ControlSwitch(ControlBlock):
+class ControlSwitch(XMLElement):
+    source: str
+    target: str
     name: str = None
-    source: str = None
-    target: str = None
+
+    def __post_init__(self):
+        # derive the name from source and target
+        if self.name is None:
+            self.name = f"{self.source}_to_{self.target}"
 
     @property
-    def jump_conditions(self) -> list[object]:
+    def jump_conditions(self) -> list[JumpCondition]:
         # all children are jump conditions
         return self._children
-
-    def derive_name(self):
-        self.name = f"{self.source}_to_{self.target}"
-
-    @staticmethod
-    def from_jump_conitions(*jump_conditions: object) -> ControlSwitch:
-        # create the control switch
-        control_switch = ControlSwitch()
-        return control_switch
