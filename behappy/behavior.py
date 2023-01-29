@@ -36,13 +36,6 @@ class JumpConditionBehavior(Behavior):
     source: ControlMode = field(init=False)
     target: ControlMode = field(init=False)
 
-@dataclass
-class TimeElapsed(JumpConditionBehavior):
-    time: float
-
-    def _resolve(self) -> JumpCondition:
-        return JumpCondition.from_sensor(ClockSensor(), goal=self.time)
-
 
 @dataclass
 class ControlModeBehavior(Behavior):
@@ -128,3 +121,21 @@ class ControlSwitchBehavior(Behavior):
 
 def hybrid_automaton(*kargs, **kwargs) -> HybridAutomatonBehavior:
     return HybridAutomatonBehavior(HybridAutomaton(*kargs, **kwargs))
+
+
+@dataclass
+class TimeElapsed(JumpConditionBehavior):
+    time: float
+
+    def _resolve(self) -> JumpCondition:
+        return JumpCondition.from_sensor(ClockSensor(), goal=self.time)
+
+@dataclass
+class GoalReached(TimeElapsed):
+    time: float = field(init=False)
+
+    def _resolve(self) -> JumpCondition:
+        # extract the time from the source completion duration
+        self.time = map(lambda c: np.max(c.completion_times), self.source.control_set.controllers)
+
+        return super()._resolve()
