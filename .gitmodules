@@ -1,3 +1,7 @@
 [submodule "ihm-promps"]
 	path = ihm-promps
 	url = git@git.tu-berlin.de:rbo/robotics/ihm-promps.git
+[submodule "pneumaticbox-python-client"]
+	path = pneumaticbox-python-client
+	url = https://git.tu-berlin.de/rbo/robotics/pneumaticbox-python-client.git
+	branch = python3Adrian
