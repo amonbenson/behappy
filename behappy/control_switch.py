@@ -7,9 +7,9 @@ from .jump_condition import JumpCondition
 
 @dataclass
 class ControlSwitch(XMLElement):
+    name: str = field(init=False, default=None)
     source: str
     target: str
-    name: str = None
 
     def __post_init__(self):
         # derive the name from source and target

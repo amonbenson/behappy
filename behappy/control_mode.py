@@ -13,6 +13,7 @@ def decapitalize(string: str) -> str:
 class ControlSet(XMLElement):
     ELEMENT_NAME = 'ControlSet'
 
+    name: str
     type: str = field(init=False)
 
     def __post_init__(self):
@@ -33,8 +34,8 @@ class ControlMode(XMLElement):
     name: str
 
     def __post_init__(self):
-        # create the control set
-        self.add(PandaControlSet())
+        # create the default control set
+        self.add(PandaControlSet('default'))
 
     @property
     def control_set(self) -> ControlSet:

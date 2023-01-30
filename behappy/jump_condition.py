@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from .xml import XMLElement
 from .sensor import Sensor
+import numpy as np
 
 class JumpCriterion(Enum):
     NORM_L1 = 0
@@ -35,5 +36,8 @@ class JumpCondition(XMLElement):
     @staticmethod
     def from_sensor(sensor: Sensor, *kargs, **kwargs) -> JumpCondition:
         jump_condition = JumpCondition(*kargs, **kwargs)
+        jump_condition.SHAPES['goal'] = sensor.SHAPE
+        jump_condition.SHAPES['norm_weights'] = sensor.SHAPE
+
         jump_condition.add(sensor)
         return jump_condition

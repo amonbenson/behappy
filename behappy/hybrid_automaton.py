@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import warnings
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from .xml import XMLElement, beautify
@@ -8,6 +10,10 @@ from .controller import Controller, GravityCompController
 from .control_switch import ControlSwitch
 from .jump_condition import JumpCondition
 from .sensor import ClockSensor
+
+if 'BEHAPPY_NO_ROSPY' not in os.environ:
+    import rospy
+    from hybrid_automaton_msgs.srv import UpdateHybridAutomaton
 
 
 @dataclass
@@ -27,4 +33,14 @@ class HybridAutomaton(XMLElement):
 
         # beautify the document
         if indent > 0:
-            return beautify(xml, indent=indent)
+            xml = beautify(xml, indent=indent)
+        
+        return xml
+    
+    def run(self, *, topic: str = '/update_hybrid_automaton'):
+        if 'BEHAPPY_NO_ROSPY' in os.environ:
+            warnings.warn('Cannot run HybridAutomaton without ROS')
+            return
+        
+        update = rospy.ServiceProxy(topic, UpdateHybridAutomaton)
+        update(self.xml(indent=0))

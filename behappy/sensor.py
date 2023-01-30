@@ -5,6 +5,7 @@ from .xml import XMLElement
 @dataclass
 class Sensor(XMLElement):
     ELEMENT_NAME = 'Sensor'
+    SHAPE = None
 
     type: str = field(init=False)
 
@@ -15,8 +16,10 @@ class Sensor(XMLElement):
 
 @dataclass
 class ClockSensor(Sensor):
-    pass
+    SHAPE = (1, 1)
 
 @dataclass
 class ForceTorqueSensor(Sensor):
+    SHAPE = (6, 1)
+
     port: int = 1

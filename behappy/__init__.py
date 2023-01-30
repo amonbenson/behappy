@@ -4,3 +4,4 @@ from .controller import *
 from .jump_condition import JumpCondition
 from .sensor import *
 from .behavior import *
+from .transform import Transform
