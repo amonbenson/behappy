@@ -5,3 +5,6 @@
 	path = pneumaticbox-python-client
 	url = https://git.tu-berlin.de/rbo/robotics/pneumaticbox-python-client.git
 	branch = python3Adrian
+[submodule "supersized-python-client"]
+	path = supersized-python-client
+	url = git@git.tu-berlin.de:rbo/robotics/supersized-python-client.git
