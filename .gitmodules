@@ -1,0 +1,3 @@
+[submodule "ihm-promps"]
+	path = ihm-promps
+	url = git@git.tu-berlin.de:rbo/robotics/ihm-promps.git
