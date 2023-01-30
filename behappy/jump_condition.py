@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from abc import ABCMeta
+from dataclasses import dataclass, field
 from enum import Enum
 from .xml import XMLElement
 from .sensor import Sensor
@@ -28,6 +29,8 @@ class JumpCondition(XMLElement):
     negate: bool = None
     jump_criterion: JumpCriterion = JumpCriterion.NORM_L1
 
+    sensor_shape: tuple = (1, 1)
+
     @property
     def sensor(self) -> XMLElement:
         # all children are jump conditions
@@ -35,9 +38,14 @@ class JumpCondition(XMLElement):
 
     @staticmethod
     def from_sensor(sensor: Sensor, *kargs, **kwargs) -> JumpCondition:
-        jump_condition = JumpCondition(*kargs, **kwargs)
-        jump_condition.SHAPES['goal'] = sensor.SHAPE
-        jump_condition.SHAPES['norm_weights'] = sensor.SHAPE
+        # create a dynamically derived class with the correct sensor shape
+        shapes = {
+            'goal': sensor.SHAPE,
+            'norm_weights': sensor.SHAPE
+        }
+        cls = type('JumpCondition', (JumpCondition,), { 'SHAPES': shapes })
 
+        # instantiate the jump condition
+        jump_condition = cls(*kargs, **kwargs, sensor_shape=sensor.SHAPE)
         jump_condition.add(sensor)
         return jump_condition

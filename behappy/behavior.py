@@ -8,7 +8,7 @@ from .control_mode import ControlMode
 from .control_switch import ControlSwitch
 from .controller import Controller
 from .jump_condition import JumpCondition, JumpCriterion
-from .sensor import ClockSensor
+from .sensor import ClockSensor, ForceTorqueSensor
 import numpy as np
 
 @dataclass
@@ -51,7 +51,7 @@ class JumpConditionBehavior(Behavior):
     source: ControlMode = field(init=False, default=None)
     target: ControlMode = field(init=False, default=None)
     switch: ControlSwitch = field(init=False, default=None)
-    jump_conditions: list[JumpCondition] = field(default_factory=list)
+    jump_conditions: list[JumpCondition] = field(init=False, default_factory=list)
 
     def apply(self):
         # add all jump conditions to the parent
@@ -168,3 +168,29 @@ class GoalReached(TimeElapsed):
 
         # generate the jump condition
         super().generate()
+
+@dataclass
+class FrontalContact(JumpConditionBehavior):
+    threshold: float = 1.0
+
+    def generate(self) -> JumpCondition:
+        self.jump_conditions.append(JumpCondition.from_sensor(ForceTorqueSensor(),
+            goal=[-self.threshold, 0, 0, 0, 0, 0],
+            goal_is_relative=False,
+            epsilon=0,
+            norm_weights=[1, 0, 0, 0, 0, 0],
+            negate=False,
+            jump_criterion=JumpCriterion.THRESH_LOWER_BOUND))
+
+@dataclass
+class BackOfHandContact(JumpConditionBehavior):
+    threshold: float = 0.1
+
+    def generate(self) -> JumpCondition:
+        self.jump_conditions.append(JumpCondition.from_sensor(ForceTorqueSensor(),
+            goal=[0, 0, 0, 0, 0, self.threshold],
+            goal_is_relative=False,
+            epsilon=0,
+            norm_weights=[0, 0, 0, 0, 0, 1],
+            negate=False,
+            jump_criterion=JumpCriterion.THRESH_UPPER_BOUND))

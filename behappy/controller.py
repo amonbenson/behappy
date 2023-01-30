@@ -28,8 +28,8 @@ class Controller(XMLElement):
     reinterpolation: Optional[bool] = False
     priority: Optional[int] = 0
 
-    operational_frame: Optional[str] = None
-    reference_frame: Optional[str] = None
+    operational_frame: Optional[str] = 'EE'
+    reference_frame: Optional[str] = 'EE'
 
     interpolation_type: Optional[str] = None
 
