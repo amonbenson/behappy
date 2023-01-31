@@ -6,7 +6,7 @@ from .hybrid_automaton import HybridAutomaton
 from .xml import XMLElement
 from .control_mode import ControlMode
 from .control_switch import ControlSwitch
-from .controller import Controller
+from .controller import Controller, GravityCompController
 from .jump_condition import JumpCondition, JumpCriterion
 from .sensor import ClockSensor, ForceTorqueSensor
 import numpy as np
@@ -43,7 +43,6 @@ class HybridAutomatonBehavior(Behavior):
 
     def apply(self):
         raise NotImplementedError()
-
 
 @dataclass
 class JumpConditionBehavior(Behavior):
@@ -84,6 +83,9 @@ class ControlModeBehavior(Behavior):
 
     def then(self, *controllers):
         return self.when(GoalReached()).then(*controllers)
+
+    def grasp(self, name: str, pose: list[float], time: float = 1.0):
+        return self.then(self.ha.create_grasp_controller(name, pose, time))
 
     def finish(self):
         return self.when(GoalReached()).finish()
@@ -132,6 +134,9 @@ class ControlSwitchBehavior(Behavior):
 
         return cm_behavior
 
+    def grasp(self, name: str, pose: list[float], time: float = 1.0):
+        return self.then(self.ha.create_grasp_controller(name, pose, time))
+
     def finish(self):
         # use the ha sink as the target
         self.target = self.ha.sink
@@ -171,11 +176,9 @@ class GoalReached(TimeElapsed):
 
 @dataclass
 class FrontalContact(JumpConditionBehavior):
-    threshold: float = 1.0
-
     def generate(self) -> JumpCondition:
         self.jump_conditions.append(JumpCondition.from_sensor(ForceTorqueSensor(),
-            goal=[-self.threshold, 0, 0, 0, 0, 0],
+            goal=[0, 0, 0, 0, 0, 0],
             goal_is_relative=False,
             epsilon=0,
             norm_weights=[1, 0, 0, 0, 0, 0],
@@ -184,11 +187,9 @@ class FrontalContact(JumpConditionBehavior):
 
 @dataclass
 class BackOfHandContact(JumpConditionBehavior):
-    threshold: float = 0.1
-
     def generate(self) -> JumpCondition:
         self.jump_conditions.append(JumpCondition.from_sensor(ForceTorqueSensor(),
-            goal=[0, 0, 0, 0, 0, self.threshold],
+            goal=[0, 0, 0, 0, 0, 1],
             goal_is_relative=False,
             epsilon=0,
             norm_weights=[0, 0, 0, 0, 0, 1],

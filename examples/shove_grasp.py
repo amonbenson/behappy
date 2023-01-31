@@ -17,7 +17,7 @@ ha = (start_ha('test')
     .then(HTransformController('descend_arm_until_contact',
         goal=Transform().translate([0, 0, 0.31]),
         completion_times=5.0))
-    .when(FrontalContact(1.0))
+    .when(FrontalContact())
 
     # rotate sideways
     .then(HTransformController('retract',
@@ -33,14 +33,14 @@ ha = (start_ha('test')
         goal=Transform().translate([0.1, 0, -0.02]),
         completion_times=6.0,
         interpolation_type='cubic'))
-    .when(BackOfHandContact(-0.8))
+    .when(BackOfHandContact())
 
     # shove the object
     .then(HTransformController('move_along_ground',
         goal=(Transform()
             .translate([-SHOVE_DISTANCE * np.cos(ALIGN_ROTATION), 0, SHOVE_DISTANCE * np.sin(ALIGN_ROTATION)])),
         completion_times=10.0))
-    .when(FrontalContact(5.0))
+    .when(FrontalContact())
     .finish())
 
 print(ha.xml(indent=2))

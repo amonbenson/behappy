@@ -10,9 +10,9 @@ import numpy as np
 class JumpCriterion(Enum):
     NORM_L1 = 0
     NORM_L2 = 1
-    NORM_LINF = 2
+    NORM_L_INF = 2
     NORM_ROTATION = 3
-    NORM_TRANSFORMATION = 4
+    NORM_TRANSFORM = 4
     THRESH_UPPER_BOUND = 5
     THRESH_LOWER_BOUND = 6
 
