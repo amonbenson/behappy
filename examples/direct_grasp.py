@@ -42,6 +42,4 @@ ha = (start_ha('test')
 print(ha.xml(indent=2))
 
 ha.run()
-
-
 rospy.spin()

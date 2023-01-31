@@ -186,10 +186,21 @@ class FrontalContact(JumpConditionBehavior):
             jump_criterion=JumpCriterion.THRESH_LOWER_BOUND))
 
 @dataclass
+class SidewaysContact(JumpConditionBehavior):
+    def generate(self) -> JumpCondition:
+        self.jump_conditions.append(JumpCondition.from_sensor(ForceTorqueSensor(),
+            goal=[0, 0, -2, 0, 0, 0],
+            goal_is_relative=False,
+            epsilon=0,
+            norm_weights=[0, 0, 1, 0, 0, 0],
+            negate=False,
+            jump_criterion=JumpCriterion.THRESH_LOWER_BOUND))
+
+@dataclass
 class BackOfHandContact(JumpConditionBehavior):
     def generate(self) -> JumpCondition:
         self.jump_conditions.append(JumpCondition.from_sensor(ForceTorqueSensor(),
-            goal=[0, 0, 0, 0, 0, 1],
+            goal=[0, 0, 0, 0, 0, 0.05],
             goal_is_relative=False,
             epsilon=0,
             norm_weights=[0, 0, 0, 0, 0, 1],
